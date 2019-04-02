@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,21 +44,33 @@ func insertFromSite(url string) {
 	doc.Find("div .anchor_box").Each(func(i int, doc2 *goquery.Selection) {
 		suffix := doc2.Find("dt").Text()
 		doc2.Find("li").Each(func(i int, doc3 *goquery.Selection) {
-			artistName := doc3.Find("a").Text()
+			artistName := doc3.Find("p.name > a").Text()
+			artist, err := getArtistByName(artistName)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Fatal(err)
+					return
+				}
+			}
+
+			if artist.id != "" {
+				return
+			}
+
+
+			log.Println(artistName)
 			now := time.Now()
-			artist := &Artist{
+			artist2 := &Artist{
 				id:         uuid.New().String(),
 				name:       artistName,
 				kanaPrefix: suffix,
 				createdAt:  now,
 				updatedAt:  now,
 			}
-			err := insert(*artist)
-			if err != nil {
+
+			if err := insert(*artist2); err != nil {
 				log.Fatal(err)
 			}
-			//artists = append(artists, *artist)
-			//fmt.Printf("%s,%s\n", artist.name, artist.kanaPrefix)
 		})
 	})
 }
