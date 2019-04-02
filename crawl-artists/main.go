@@ -43,13 +43,14 @@ func insertFromSite(url string) {
 	doc.Find("div .anchor_box").Each(func(i int, doc2 *goquery.Selection) {
 		suffix := doc2.Find("dt").Text()
 		doc2.Find("li").Each(func(i int, doc3 *goquery.Selection) {
+			artistName := doc3.Find("a").Text()
 			now := time.Now()
 			artist := &Artist{
 				id:         uuid.New().String(),
-				name:       doc3.Find("a").Text(),
+				name:       artistName,
 				kanaPrefix: suffix,
-				createdAt: now,
-				updatedAt: now,
+				createdAt:  now,
+				updatedAt:  now,
 			}
 			err := insert(*artist)
 			if err != nil {
